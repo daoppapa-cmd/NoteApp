@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>កម្មវិធីកត់ត្រា - Modern Notes Premium</title>
+    
+    <!-- Google Fonts: Kantumruy Pro -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Kantumruy Pro"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#4f46e5', // Indigo 600
+                        secondary: '#db2777', // Pink 600
+                        danger: '#ef4444', 
+                        success: '#10b981', 
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.1), 0 8px 10px -6px rgba(79, 70, 229, 0.1);
+            border-color: rgba(99, 102, 241, 0.2);
+        }
+
+        /* Nav Item Styles */
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+        .nav-item.active {
+            background: rgba(79, 70, 229, 0.1);
+            color: #4f46e5;
+            font-weight: 600;
+        }
+        .nav-item.active-trash {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="h-screen overflow-hidden flex flex-col md:flex-row text-slate-700">
+
+    <!-- SIDEBAR (Desktop) -->
+    <aside class="hidden md:flex flex-col w-72 glass-panel h-full z-20 shadow-lg">
+        <div class="p-8 flex items-center gap-3">
+            <div class="bg-gradient-to-br from-primary to-purple-600 text-white p-2.5 rounded-xl shadow-lg shadow-primary/30">
+                <i data-lucide="notebook-pen" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">NoteApp</h1>
+                <p class="text-[10px] text-slate-400 font-medium tracking-wide">PREMIUM</p>
+            </div>
+        </div>
+
+        <div class="px-6 mb-6">
+            <button onclick="openModal()" class="w-full bg-gradient-to-r from-primary to-indigo-600 hover:from-indigo-600 hover:to-primary text-white py-3.5 rounded-xl shadow-lg shadow-indigo-200 transition-all transform active:scale-95 flex items-center justify-center gap-2 font-semibold">
+                <i data-lucide="plus" class="w-5 h-5"></i>
+                <span>បង្កើតថ្មី</span>
+            </button>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-1">
+            <button onclick="filterNotes('all')" id="nav-all" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-white/50 rounded-xl">
+                <i data-lucide="layout-grid" class="w-5 h-5"></i>
+                <span>កំណត់ត្រាទាំងអស់</span>
+            </button>
+            <button onclick="filterNotes('favorite')" id="nav-fav" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-white/50 rounded-xl">
+                <i data-lucide="heart" class="w-5 h-5"></i>
+                <span>ដែលចូលចិត្ត</span>
+            </button>
+            
+            <div class="pt-4 mt-4 border-t border-slate-200/50">
+                <p class="px-4 text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">ផ្សេងៗ</p>
+                <button onclick="filterNotes('trash')" id="nav-trash" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-red-50 hover:text-red-500 rounded-xl transition-colors">
+                    <i data-lucide="trash-2" class="w-5 h-5"></i>
+                    <span>ធុងសំរាម</span>
+                </button>
+            </div>
+        </nav>
+        
+        <div class="p-4 text-center">
+            <span id="connectionStatus" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-600 text-xs font-medium border border-green-200">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                Connecting...
+            </span>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col h-full relative overflow-hidden">
+        
+        <!-- Top Bar -->
+        <header class="glass-panel sticky top-0 z-10 px-4 md:px-8 py-4 flex justify-between items-center md:bg-white/30 border-b border-white/50">
+            <div class="md:hidden flex items-center gap-2">
+                <div class="bg-gradient-to-br from-primary to-purple-600 text-white p-2 rounded-lg">
+                    <i data-lucide="notebook-pen" class="w-4 h-4"></i>
+                </div>
+                <h1 class="font-bold text-lg text-slate-800">NoteApp</h1>
+            </div>
+
+            <div class="relative w-full md:w-96 ml-auto group">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i data-lucide="search" class="h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors"></i>
+                </div>
+                <input type="text" id="searchInput" onkeyup="searchNotes()" placeholder="ស្វែងរក..." 
+                    class="block w-full pl-10 pr-10 py-2.5 border-none rounded-xl bg-white/50 focus:bg-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-sm">
+                 <div id="loadingIndicator" class="absolute right-3 top-2.5 hidden">
+                    <div class="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                 </div>
+            </div>
+        </header>
+
+        <!-- Trash Banner -->
+        <div id="trashBanner" class="hidden bg-red-500/10 backdrop-blur border-b border-red-100 p-3 text-center animate-fade-in">
+            <p class="text-xs md:text-sm text-red-600 font-medium flex items-center justify-center gap-2">
+                <i data-lucide="info" class="w-4 h-4"></i>
+                <span>កំណត់ត្រាក្នុងធុងសំរាមនឹងត្រូវលុបស្វ័យប្រវត្តិក្នុងរយៈពេល 60 ថ្ងៃ</span>
+            </p>
+        </div>
+
+        <!-- Notes Grid Area -->
+        <div id="notesContainer" class="flex-1 overflow-y-auto p-4 md:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 content-start pb-24 md:pb-8">
+            <!-- Notes injected via JS -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <div class="relative">
+                <div class="absolute inset-0 bg-primary/20 blur-3xl rounded-full"></div>
+                <div class="bg-white p-6 rounded-2xl shadow-xl shadow-indigo-100 relative animate-float">
+                    <i id="emptyIcon" data-lucide="cloud" class="w-12 h-12 text-primary"></i>
+                </div>
+            </div>
+            <h3 id="emptyText" class="mt-6 text-xl font-bold text-slate-700">ចាប់ផ្តើមថ្មី</h3>
+            <p id="emptySubText" class="text-slate-400 mt-2 text-center max-w-xs">ចុចប៊ូតុងខាងក្រោមដើម្បីបង្កើតកំណត់ត្រាដំបូងរបស់អ្នក</p>
+        </div>
+
+        <!-- Mobile FAB -->
+        <button id="mobileFab" onclick="openModal()" class="md:hidden fixed bottom-24 right-5 bg-gradient-to-r from-primary to-indigo-600 text-white p-4 rounded-full shadow-xl shadow-indigo-300 z-30 active:scale-90 transition-transform">
+            <i data-lucide="plus" class="w-6 h-6"></i>
+        </button>
+    </main>
+
+    <!-- Mobile Nav -->
+    <nav class="md:hidden fixed bottom-0 w-full glass-panel z-40 pb-safe border-t border-white/50">
+        <div class="flex justify-around items-center h-16">
+            <button onclick="filterNotes('all')" id="mob-nav-all" class="flex flex-col items-center gap-1 p-2 w-full text-slate-400 active:bg-slate-100/50">
+                <i data-lucide="layout-grid" class="w-5 h-5"></i>
+                <span class="text-[10px] font-medium">ទាំងអស់</span>
+            </button>
+            <button onclick="filterNotes('favorite')" id="mob-nav-fav" class="flex flex-col items-center gap-1 p-2 w-full text-slate-400 active:bg-slate-100/50">
+                <i data-lucide="heart" class="w-5 h-5"></i>
+                <span class="text-[10px] font-medium">ចូលចិត្ត</span>
+            </button>
+            <button onclick="filterNotes('trash')" id="mob-nav-trash" class="flex flex-col items-center gap-1 p-2 w-full text-slate-400 active:bg-slate-100/50">
+                <i data-lucide="trash-2" class="w-5 h-5"></i>
+                <span class="text-[10px] font-medium">ធុងសំរាម</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Modal -->
+    <div id="noteModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="modalBackdrop"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                <div id="modalPanel" class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl opacity-0 scale-95 translate-y-4">
+                    
+                    <!-- Modal Header -->
+                    <div class="bg-white px-6 py-4 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10">
+                        <div class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <span class="w-1.5 h-6 rounded-full bg-primary block"></span>
+                            <span id="modalTitle">បង្កើតថ្មី</span>
+                        </div>
+                        <div class="flex gap-1">
+                            <button id="favoriteBtn" onclick="toggleFavoriteInModal()" class="p-2.5 rounded-xl hover:bg-pink-50 text-slate-400 transition-colors">
+                                <i data-lucide="heart" class="w-5 h-5"></i>
+                            </button>
+                            <button onclick="closeModal()" class="p-2.5 rounded-xl hover:bg-slate-100 text-slate-500 transition-colors">
+                                <i data-lucide="x" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="px-6 py-6 bg-slate-50/50">
+                        <input type="hidden" id="noteId">
+                        <input type="text" id="inputTitle" placeholder="ចំណងជើង..." class="w-full text-xl font-bold text-slate-800 placeholder:text-slate-300 bg-transparent border-none outline-none mb-4">
+                        <div class="h-px bg-slate-200 w-full mb-4"></div>
+                        <textarea id="inputContent" placeholder="សរសេរអ្វីដែលសំខាន់នៅទីនេះ..." class="w-full h-64 md:h-96 resize-none text-slate-600 leading-relaxed placeholder:text-slate-300 bg-transparent border-none outline-none text-lg"></textarea>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="bg-white px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
+                        <button onclick="closeModal()" class="px-5 py-2.5 rounded-xl text-slate-500 font-medium hover:bg-slate-100 transition-colors">បោះបង់</button>
+                        <button onclick="saveNote()" id="saveBtn" class="px-6 py-2.5 rounded-xl bg-primary hover:bg-indigo-700 text-white font-medium shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center gap-2">
+                            <span>រក្សាទុក</span>
+                            <i data-lucide="check" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 bg-slate-800/90 backdrop-blur text-white px-6 py-3 rounded-full shadow-2xl transform -translate-y-24 transition-all duration-300 z-[70] flex items-center gap-3">
+        <div class="bg-green-500 rounded-full p-1">
+            <i data-lucide="check" class="w-3 h-3 text-white stroke-[3]"></i>
+        </div>
+        <span id="toastMessage" class="text-sm font-medium">ជោគជ័យ</span>
+    </div>
+
+    <!-- FIREBASE MODULES -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Setup
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        let currentUser = null;
+        let notes = [];
+        const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000; 
+
+        // Auth
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Auth:", error);
+                updateConnectionStatus(false);
+            }
+        };
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                updateConnectionStatus(true);
+                subscribeToNotes();
+            } else {
+                currentUser = null;
+                updateConnectionStatus(false);
+                notes = [];
+                renderNotes();
+            }
+        });
+
+        function updateConnectionStatus(isOnline) {
+            const el = document.getElementById('connectionStatus');
+            if(isOnline) {
+                el.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-600 text-xs font-medium border border-green-200";
+                el.innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Online';
+            } else {
+                el.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-600 text-xs font-medium border border-red-200";
+                el.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500"></span> Offline';
+            }
+        }
+
+        // Data Sync
+        function subscribeToNotes() {
+            if (!currentUser) return;
+            const q = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'notes');
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+
+            onSnapshot(q, (snapshot) => {
+                notes = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.deletedAt) {
+                         const deletedTime = data.deletedAt.toDate ? data.deletedAt.toDate().getTime() : (new Date(data.deletedAt).getTime());
+                         if (Date.now() - deletedTime > SIXTY_DAYS_MS) {
+                             deleteDoc(doc.ref).catch(console.error);
+                             return; 
+                         }
+                    }
+                    notes.push({ id: doc.id, ...data });
+                });
+                
+                notes.sort((a, b) => {
+                    const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : (a.timestamp || 0);
+                    const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : (b.timestamp || 0);
+                    return timeB - timeA;
+                });
+
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                renderNotes();
+            });
+        }
+
+        // Functions exposed to Window
+        window.saveNote = async function() {
+            if (!currentUser) return showToast("សូមភ្ជាប់អ៊ិនធឺណិត", "error");
+            const id = document.getElementById('noteId').value;
+            const title = document.getElementById('inputTitle').value.trim();
+            const content = document.getElementById('inputContent').value.trim();
+
+            if (!title && !content) { window.closeModal(); return; }
+
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<div class="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>';
+
+            try {
+                const noteData = {
+                    title, content,
+                    isFavorite: window.isFavoriteModal,
+                    timestamp: serverTimestamp()
+                };
+
+                if (id) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'notes', id), noteData);
+                    showToast('កែប្រែជោគជ័យ');
+                } else {
+                    await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'notes'), noteData);
+                    showToast('បង្កើតជោគជ័យ');
+                }
+                window.closeModal();
+            } catch (error) {
+                console.error(error);
+                showToast("មានបញ្ហា", "error");
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<span>រក្សាទុក</span><i data-lucide="check" class="w-4 h-4"></i>';
+                lucide.createIcons();
+            }
+        }
+
+        window.deleteNote = async function(id) {
+            if(!currentUser) return;
+            if(confirm('ដាក់ចូលធុងសំរាម?')) {
+                try {
+                    await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'notes', id), {
+                        deletedAt: serverTimestamp(),
+                        isFavorite: false
+                    });
+                    showToast('បានដាក់ចូលធុងសំរាម');
+                } catch (e) { console.error(e); }
+            }
+        }
+
+        window.restoreNote = async function(id) {
+            if(!currentUser) return;
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'notes', id), {
+                    deletedAt: deleteField()
+                });
+                showToast('បានស្តារវិញ');
+            } catch (e) { console.error(e); }
+        }
+
+        window.permanentDelete = async function(id) {
+            if(!currentUser) return;
+            if(confirm('លុបចោលជាអចិន្ត្រៃយ៍? មិនអាចយកវិញបានទេ។')) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'notes', id));
+                    showToast('បានលុបជាអចិន្ត្រៃយ៍');
+                } catch (e) { console.error(e); }
+            }
+        }
+
+        window.toggleFavorite = async function(id) {
+            const note = notes.find(n => n.id === id);
+            if (note && !note.deletedAt) {
+                try {
+                    await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'notes', id), { 
+                        isFavorite: !note.isFavorite 
+                    });
+                } catch (e) { console.error(e); }
+            }
+        }
+
+        // Rendering
+        window.isFavoriteModal = false;
+        let currentFilter = 'all';
+
+        window.renderNotes = function() {
+            const container = document.getElementById('notesContainer');
+            const emptyState = document.getElementById('emptyState');
+            const trashBanner = document.getElementById('trashBanner');
+            const createBtn = document.querySelector('aside button'); // Create Btn
+            const mobileFab = document.getElementById('mobileFab');
+            
+            container.innerHTML = '';
+            
+            // Filter logic
+            let filtered = notes.filter(n => {
+                if(currentFilter === 'trash') return !!n.deletedAt;
+                return !n.deletedAt;
+            });
+
+            // Tab specific UI
+            if (currentFilter === 'trash') {
+                trashBanner.classList.remove('hidden');
+                mobileFab.classList.add('hidden');
+                // Gray out create button on sidebar
+                if(createBtn) {
+                     createBtn.style.opacity = '0.5';
+                     createBtn.style.pointerEvents = 'none';
+                }
+                document.getElementById('emptyText').textContent = "ធុងសំរាមទទេ";
+                document.getElementById('emptySubText').textContent = "គ្មានឯកសារដែលបានលុប";
+                document.getElementById('emptyIcon').setAttribute('data-lucide', 'trash-2');
+                document.getElementById('emptyIcon').classList.add('text-red-400');
+                document.getElementById('emptyIcon').classList.remove('text-primary');
+            } else {
+                trashBanner.classList.add('hidden');
+                mobileFab.classList.remove('hidden');
+                if(createBtn) {
+                    createBtn.style.opacity = '1';
+                    createBtn.style.pointerEvents = 'auto';
+                }
+                document.getElementById('emptyText').textContent = "ចាប់ផ្តើមថ្មី";
+                document.getElementById('emptySubText').textContent = "ចុចប៊ូតុងដើម្បីបង្កើតកំណត់ត្រា";
+                document.getElementById('emptyIcon').setAttribute('data-lucide', 'cloud');
+                document.getElementById('emptyIcon').classList.remove('text-red-400');
+                document.getElementById('emptyIcon').classList.add('text-primary');
+            }
+
+            // Search
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            if(term) {
+                filtered = filtered.filter(n => (n.title||'').toLowerCase().includes(term) || (n.content||'').toLowerCase().includes(term));
+            }
+
+            // Favorites
+            if(currentFilter === 'favorite') {
+                filtered = filtered.filter(n => n.isFavorite);
+                window.updateNavActiveState('nav-fav');
+            } else if (currentFilter === 'trash') {
+                window.updateNavActiveState('nav-trash');
+            } else {
+                window.updateNavActiveState('nav-all');
+            }
+
+            // Render
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                filtered.forEach((note, i) => {
+                    let dateStr = "ឥឡូវនេះ";
+                    if(note.timestamp) {
+                        const d = note.timestamp.toDate ? note.timestamp.toDate() : new Date(note.timestamp);
+                        dateStr = d.toLocaleDateString('km-KH', { day: 'numeric', month: 'short', year: 'numeric' });
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = `glass-card p-5 rounded-2xl flex flex-col gap-3 h-60 relative group animate-slide-up select-none`;
+                    card.style.animationDelay = `${i * 0.05}s`;
+
+                    // Card Header
+                    let headerHtml = `
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-bold text-lg text-slate-800 line-clamp-1 pr-2">${note.title || 'គ្មានចំណងជើង'}</h3>
+                             ${currentFilter !== 'trash' ? `
+                                <button onclick="event.stopPropagation(); toggleFavorite('${note.id}')" class="p-1.5 rounded-full hover:bg-pink-50 transition-colors ${note.isFavorite ? 'text-secondary' : 'text-slate-300 hover:text-secondary'}">
+                                    <i data-lucide="heart" class="w-5 h-5 ${note.isFavorite ? 'fill-current' : ''}"></i>
+                                </button>
+                             ` : `<span class="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] rounded-md font-bold">DELETED</span>`}
+                        </div>
+                    `;
+
+                    // Card Content
+                    let contentHtml = `
+                        <p class="text-slate-500 text-sm line-clamp-3 leading-relaxed flex-1">${note.content || ''}</p>
+                    `;
+
+                    // Card Footer (Actions)
+                    let actionsHtml = '';
+                    if (currentFilter === 'trash') {
+                        // TRASH VIEW ACTIONS: Two Big Buttons
+                        actionsHtml = `
+                            <div class="grid grid-cols-2 gap-2 mt-auto pt-3 border-t border-slate-100">
+                                <button onclick="event.stopPropagation(); restoreNote('${note.id}')" class="flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition-colors text-xs font-semibold">
+                                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> ស្តារ
+                                </button>
+                                <button onclick="event.stopPropagation(); permanentDelete('${note.id}')" class="flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors text-xs font-semibold">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> លុប
+                                </button>
+                            </div>
+                        `;
+                        card.onclick = null; // Disable modal in trash
+                    } else {
+                        // NORMAL VIEW ACTIONS
+                        actionsHtml = `
+                            <div class="flex justify-between items-center pt-3 border-t border-slate-100 mt-auto">
+                                <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">${dateStr}</span>
+                                <button onclick="event.stopPropagation(); deleteNote('${note.id}')" class="p-2 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 md:opacity-0 focus:opacity-100" title="ដាក់ចូលធុងសំរាម">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        `;
+                        card.onclick = (e) => {
+                            // Don't trigger if clicked on button
+                            if(e.target.closest('button')) return;
+                            window.openModal(note.id);
+                        }
+                        card.style.cursor = 'pointer';
+                    }
+
+                    card.innerHTML = headerHtml + contentHtml + actionsHtml;
+                    container.appendChild(card);
+                });
+                lucide.createIcons();
+            }
+        }
+
+        // Navigation UI
+        window.updateNavActiveState = function(activeId) {
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.classList.remove('active', 'active-trash', 'bg-white/50');
+            });
+            document.querySelectorAll('nav.fixed button').forEach(btn => {
+                btn.classList.remove('text-primary', 'text-red-500');
+                btn.classList.add('text-slate-400');
+            });
+
+            // Desktop
+            const dBtn = document.getElementById(activeId);
+            if(dBtn) {
+                if(activeId === 'nav-trash') dBtn.classList.add('active-trash', 'bg-red-50');
+                else dBtn.classList.add('active', 'bg-white/80');
+            }
+
+            // Mobile
+            const map = { 'nav-all': 'mob-nav-all', 'nav-fav': 'mob-nav-fav', 'nav-trash': 'mob-nav-trash' };
+            const mBtn = document.getElementById(map[activeId]);
+            if(mBtn) {
+                mBtn.classList.remove('text-slate-400');
+                if(activeId === 'nav-trash') mBtn.classList.add('text-red-500');
+                else mBtn.classList.add('text-primary');
+            }
+        }
+
+        // Modal Logic
+        window.openModal = function(noteId = null) {
+            if(currentFilter === 'trash') return;
+            const modal = document.getElementById('noteModal');
+            const backdrop = document.getElementById('modalBackdrop');
+            const panel = document.getElementById('modalPanel');
+
+            document.getElementById('noteId').value = '';
+            document.getElementById('inputTitle').value = '';
+            document.getElementById('inputContent').value = '';
+            window.isFavoriteModal = false;
+
+            if (noteId) {
+                const note = notes.find(n => n.id === noteId);
+                if(note) {
+                    document.getElementById('noteId').value = note.id;
+                    document.getElementById('inputTitle').value = note.title;
+                    document.getElementById('inputContent').value = note.content;
+                    document.getElementById('modalTitle').innerText = 'កែប្រែកំណត់ត្រា';
+                    window.isFavoriteModal = note.isFavorite;
+                }
+            } else {
+                document.getElementById('modalTitle').innerText = 'បង្កើតថ្មី';
+            }
+            updateFavoriteModalUI();
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                backdrop.classList.remove('opacity-0');
+                panel.classList.remove('opacity-0', 'scale-95', 'translate-y-4');
+                panel.classList.add('scale-100', 'translate-y-0');
+            }, 10);
+        }
+
+        window.closeModal = function() {
+            const modal = document.getElementById('noteModal');
+            const backdrop = document.getElementById('modalBackdrop');
+            const panel = document.getElementById('modalPanel');
+
+            backdrop.classList.add('opacity-0');
+            panel.classList.add('opacity-0', 'scale-95', 'translate-y-4');
+            panel.classList.remove('scale-100', 'translate-y-0');
+            
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        window.toggleFavoriteInModal = function() {
+            window.isFavoriteModal = !window.isFavoriteModal;
+            updateFavoriteModalUI();
+        }
+
+        window.updateFavoriteModalUI = function() {
+            const btn = document.getElementById('favoriteBtn');
+            const i = btn.querySelector('svg') || btn.querySelector('i');
+            if(window.isFavoriteModal) {
+                btn.classList.add('text-secondary', 'bg-pink-50');
+                btn.classList.remove('text-slate-400');
+                if(i) i.classList.add('fill-current');
+            } else {
+                btn.classList.remove('text-secondary', 'bg-pink-50');
+                btn.classList.add('text-slate-400');
+                if(i) i.classList.remove('fill-current');
+            }
+        }
+
+        window.showToast = function(msg, type="success") {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMessage').innerText = msg;
+            t.classList.remove('-translate-y-24');
+            t.classList.add('translate-y-0');
+            setTimeout(() => {
+                t.classList.remove('translate-y-0');
+                t.classList.add('-translate-y-24');
+            }, 3000);
+        }
+
+        window.searchNotes = function() { renderNotes(); }
+        window.filterNotes = function(t) { currentFilter = t; renderNotes(); }
+
+        document.getElementById('noteModal').addEventListener('click', (e) => {
+            if(e.target.id === 'modalBackdrop') window.closeModal();
+        });
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
